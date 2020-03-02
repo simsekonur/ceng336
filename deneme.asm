@@ -65,10 +65,9 @@ setup
     movlw h'18'
     movwf TRISE
     clrf WREG
-    call showtime
-    goto wait
+    goto showtime
 
-showtime
+showtime:
     movlw h'ff'
     movwf LATB
     movwf LATC
@@ -80,7 +79,7 @@ showtime
     movwf LATB
     movwf LATC
     movwf LATD
-    return
+    goto wait
  
 wait:
     btfss PORTA, 4
@@ -285,9 +284,20 @@ yakyakyak:
     bz yandik
     
 yandik:
-    nop
-    goto setup
+    
+    call delay_500
+    call delay_500
+    clrf opSelect
+    clrf portSelBC
+    clrf portSelD
+    clrf LATA
+    clrf LATB
+    clrf LATC
+    clrf LATD
+    clrf LATE
+    goto wait
 
 main:
     call setup
+    
 end
