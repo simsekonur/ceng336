@@ -2,14 +2,14 @@ LIST    P=18F8722
 #INCLUDE <p18f8722.inc>
 CONFIG OSC=HSPLL, FCMEN=OFF, IESO=OFF,PWRT=OFF,BOREN=OFF, WDT=OFF, MCLRE=ON, LPT1OSC=OFF, LVP=OFF, XINST=OFF, DEBUG=OFF
 
-opSelect udata h'20'
-opSelect
+operationSelect udata h'20'
+operationSelect
  
-portSelBC udata h'21'
-portSelBC
+portSelectionBC udata h'21'
+portSelectionBC
  
-portSelD udata h'22'
-portSelD
+portSelectionD udata h'22'
+portSelectionD
 
 delay_counter1 udata h'23'
 delay_counter1
@@ -31,23 +31,23 @@ delay_500 ; 500 ms delay
     movlw b'00000011'
     movwf delay_counter3
     nop
-for1:
+travel1:
     decfsz delay_counter1
-    goto for2
+    goto travel2
     return
-for2:
+travel2:
     decfsz delay_counter2
-    goto for3
-    goto for1
-for3:
+    goto travel3
+    goto travel1
+travel3:
     decfsz delay_counter3
-    goto for3
-    goto for2 
+    goto travel3
+    goto travel2 
  
-setup
-    clrf opSelect
-    clrf portSelBC
-    clrf portSelD
+init
+    clrf operationSelect
+    clrf portSelectionBC
+    clrf portSelectionD
     clrf LATA
     clrf LATB
     clrf LATC
@@ -65,9 +65,9 @@ setup
     movlw h'18'
     movwf TRISE
     clrf WREG
-    goto showtime
+    goto performDelay
 
-showtime:
+performDelay:
     movlw h'ff'
     movwf LATB
     movwf LATC
@@ -84,95 +84,95 @@ showtime:
 wait:
     btfss PORTA, 4
     goto wait
-    incf opSelect
-    goto waitAdd
+    incf operationSelect
+    goto additionWillPerform
 
-waitAdd:
+additionWillPerform:
     btfss PORTA, 4
-    goto select
-    decf opSelect
-    goto waitSub
+    goto selectPort
+    decf operationSelect
+    goto subWillPerform
 
-waitSub:
+subWillPerform:
     btfss PORTA, 4
-    goto select
-    incf opSelect
-    goto waitAdd
+    goto selectPort
+    incf operationSelect
+    goto additionWillPerform
 
-select:
+selectPort:
     btfss PORTE, 3
-    goto select
-    incf portSelBC
-    goto selectB
+    goto selectPort
+    incf portSelectionBC
+    goto selectPortB
 
-selectB:
+selectPortB:
     btfss PORTE, 3
-    goto enterVal
-    decf portSelBC
-    goto selectC
+    goto enterValue
+    decf portSelectionBC
+    goto selectPortC
 
-selectC:
+selectPortC:
     btfss PORTE, 3
-    goto enterVal
-    incf portSelD
-    goto selectD
+    goto enterValue
+    incf portSelectionD
+    goto selectPortD
 
-selectD:
+selectPortD:
     btfss PORTE, 3
-    goto operation
-    incf portSelBC
-    decf portSelD
-    goto selectB
+    goto whichOperation
+    incf portSelectionBC
+    decf portSelectionD
+    goto selectPortB
     
-enterVal:
-    btfss portSelBC, 0
-    goto enterValC
-    goto enterValB
+enterValue:
+    btfss portSelectionBC, 0
+    goto enterValueForC
+    goto enterValueForB
 
-enterValB:
+enterValueForB:
     btfss PORTE, 4
-    goto enterValB
+    goto enterValueForB
     btg LATB, 0, 0
     btfss PORTE, 4
-    goto selectB
+    goto selectPortB
     btg LATB, 1, 0
     btfss PORTE, 4
-    goto selectB
+    goto selectPortB
     btg LATB, 2, 0
     btfss PORTE, 4
-    goto selectB
+    goto selectPortB
     btg LATB, 3, 0
     btfss PORTE, 4
-    goto selectB
-    clrf portSelBC
+    goto selectPortB
+    clrf portSelectionBC
     clrf LATB
-    goto select
+    goto selectPort
     
-enterValC:
+enterValueForC:
     btfss PORTE, 4
-    goto enterValC
+    goto enterValueForC
     btg LATC, 0, 0
     btfss PORTE, 4
-    goto selectC
+    goto selectPortC
     btg LATC, 1, 0
     btfss PORTE, 4
-    goto selectC
+    goto selectPortC
     btg LATC, 2, 0
     btfss PORTE, 4
-    goto selectC
+    goto selectPortC
     btg LATC, 3, 0
     btfss PORTE, 4
-    goto selectC
-    clrf portSelBC
+    goto selectPortC
+    clrf portSelectionBC
     clrf LATC
-    goto select
+    goto selectPort
 
-operation:
-    btfss opSelect, 0
-    goto sub2
-    goto add2
+whichOperation:
+    btfss operationSelect, 0
+    goto subActual
+    goto addActual
     
-add2:
+addActual:
     btfsc PORTB, 0
     incf WREG
     
@@ -195,15 +195,15 @@ add2:
     incf WREG
     btfsc PORTC, 3
     incf WREG
-    goto yakyakyak
+    goto turnOnLeds
 
-sub2:
+subActual:
     movf LATB, WREG
     cpfslt LATC
-    goto cbuyuk
-    goto bbuyuk
+    goto cIsLarger
+    goto bIsLarger
     
-bbuyuk:
+bIsLarger:
     clrf WREG
     btfsc PORTB, 0
     incf WREG
@@ -227,9 +227,9 @@ bbuyuk:
     nop
     btfsc PORTC ,0
     decf WREG
-    goto yakyakyak
+    goto turnOnLeds
    
-cbuyuk:
+cIsLarger:
     clrf WREG
     btfsc PORTC, 0
     incf WREG
@@ -253,43 +253,43 @@ cbuyuk:
     nop
     btfsc PORTB ,0
     decf WREG
-    goto yakyakyak
+    goto turnOnLeds
     
     
-yakyakyak:
-    bz yandik
+turnOnLeds:
+    bz afterTurnOn
     decf WREG
     bsf LATD, 0, 0
-    bz yandik
+    bz afterTurnOn
     decf WREG
     bsf LATD, 1, 0
-    bz yandik
+    bz afterTurnOn
     decf WREG
     bsf LATD, 2, 0
-    bz yandik
+    bz afterTurnOn
     decf WREG
     bsf LATD, 3, 0
-    bz yandik
+    bz afterTurnOn
     decf WREG
     bsf LATD, 4, 0
-    bz yandik
+    bz afterTurnOn
     decf WREG
     bsf LATD, 5, 0
-    bz yandik
+    bz afterTurnOn
     decf WREG
     bsf LATD, 6, 0
-    bz yandik
+    bz afterTurnOn
     decf WREG
     bsf LATD, 7, 0
-    bz yandik
+    bz afterTurnOn
     
-yandik:
+afterTurnOn:
     
     call delay_500
     call delay_500
-    clrf opSelect
-    clrf portSelBC
-    clrf portSelD
+    clrf operationSelect
+    clrf portSelectionBC
+    clrf portSelectionD
     clrf LATA
     clrf LATB
     clrf LATC
@@ -298,6 +298,6 @@ yandik:
     goto wait
 
 main:
-    call setup
+    call init
     
 end
